@@ -180,6 +180,7 @@
 
   @media(max-width:560px){.grid{grid-template-columns:1fr}header,form{padding-left:22px;padding-right:22px}.langs{right:16px;top:68px}.ajuda-btn{right:16px;top:16px}.painel{width:100%}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -718,86 +719,137 @@
      Cole aqui a URL gerada pelo Google Apps Script.
      Exemplo: https://script.google.com/macros/s/AKfy.../exec
   =================================================== */
-  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqKqyPb1IUJFcpQntnoZ3lNB3huk0JFs8CfAeWNHYJuYpu_sbrdXDJCq_l-5cnAsJYpQ/exec";
+  var SCRIPT_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
   /* Submit → envia dados para o Google Sheets */
+  /* Submit → modo sem backend: gera Excel, abre e-mail e confirma */
   document.getElementById('form').addEventListener('submit', function(e){
     e.preventDefault();
 
-    var btn = this.querySelector('button[type="submit"]');
+    var form = this;
+    var btn  = form.querySelector('button[type="submit"]');
     var textoOriginal = btn.textContent;
-    btn.textContent = '⏳ Enviando...';
-    btn.disabled = true;
 
-    // Coleta todos os campos do formulário
-    var fd  = new FormData(this);
-    var obj = {};
-    fd.forEach(function(val, key){ if(key !== 'invoice_file') obj[key] = val; });
+    // Rótulos das colunas (uma por campo existente do formulário)
+    var ROTULOS = {
+      nome_beneficiario:        'Nome do Beneficiário',
+      endereco_beneficiario:    'Endereço do Beneficiário',
+      pais:                     'País',
+      natureza_operacao:        'Natureza de Operação',
+      natureza_operacao_outros: 'Natureza de Operação (Outros)',
+      conta:                    'Número da Conta',
+      iban:                     'IBAN',
+      aba:                      'Número ABA / Routing',
+      swift:                    'Código SWIFT / BIC',
+      banco:                    'Banco Destinatário',
+      pais_banco:               'País do Banco',
+      valor_total:              'Valor Total',
+      moeda:                    'Moeda',
+      banco_intermediario:      'Banco Intermediário',
+      swift_intermediario:      'Código SWIFT / BIC do Intermediário',
+      conta_intermediario:      'Conta / ABA / Routing (Intermediário)',
+      iban_intermediario:       'IBAN do Intermediário',
+      pais_intermediario:       'País do Banco Intermediário',
+      contato:                  'Contato',
+      telefone:                 'Telefone',
+      email:                    'E-mail',
+      dados_invoice:            'Dados da Invoice',
+      arquivo_invoice:          'Arquivo da Invoice'
+    };
 
-    // Captura nome do arquivo de invoice (se houver)
+    // ===== 1) Valida o arquivo (PDF/JPG/JPEG/PNG, máx. 10 MB) =====
     var fileInput = document.getElementById('invoiceFile');
-    if(fileInput.files && fileInput.files.length > 0){
-      obj['arquivo_invoice'] = fileInput.files[0].name;
-    } else {
-      obj['arquivo_invoice'] = '';
+    var arquivo = (fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null;
+    if (arquivo) {
+      var extOk = /\.(pdf|jpe?g|png)$/i.test(arquivo.name);
+      if (!extOk) {
+        alert('Tipo de arquivo não permitido. Envie apenas PDF, JPG, JPEG ou PNG.');
+        return;
+      }
+      if (arquivo.size > 10 * 1024 * 1024) {
+        alert('O arquivo excede o tamanho máximo de 10 MB.');
+        return;
+      }
     }
 
-    // Verifica se a URL foi configurada
-    if(!SCRIPT_URL || SCRIPT_URL === 'COLE_AQUI_A_URL_DO_APPS_SCRIPT'){
-      alert('⚠️ Configure a variável SCRIPT_URL no HTML com a URL do seu Google Apps Script.');
+    btn.textContent = '⏳ Gerando...';
+    btn.disabled = true;
+
+    // ===== 2) Lê todos os campos existentes do formulário =====
+    var fd = new FormData(form);
+    var campos = {};
+    fd.forEach(function(val, key){ if (key !== 'invoice_file') campos[key] = val; });
+    campos['arquivo_invoice'] = arquivo ? arquivo.name : '';
+
+    // Ordem fixa das colunas (segue os campos do formulário)
+    var ordem = Object.keys(ROTULOS);
+    var headers = ordem.map(function(k){ return ROTULOS[k]; });
+    var valores = ordem.map(function(k){ return campos[k] !== undefined ? campos[k] : ''; });
+
+    // ===== 3) Gera e baixa o Excel (uma coluna por campo) =====
+    try {
+      var ws = XLSX.utils.aoa_to_sheet([headers, valores]);
+      var wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Solicitacao');
+      var hoje = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, 'Solicitacao_Pagamento_Internacional_' + hoje + '.xlsx');
+    } catch (err) {
+      alert('Erro ao gerar o Excel: ' + err.message);
       btn.textContent = textoOriginal;
       btn.disabled = false;
       return;
     }
 
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode:   'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(obj)
-    })
-    .then(function(){
-      // Mostra modal elegante
-      const modal = document.getElementById('modalSucesso');
-      const modalMsg = document.getElementById('modalMsg');
-      const modalBotao = document.getElementById('modalBotao');
-      
-      // Define mensagem (multilíngue)
-      const msgs = {
-        'pt': 'Sua Ordem de Pagamento foi enviada com sucesso.',
-        'en': 'Your Payment Order was sent successfully.',
-        'es': 'Su Orden de Pago fue enviada exitosamente.'
-      };
-      
-      modalMsg.innerHTML = msgs[lang] || msgs['pt'];
-      modal.classList.add('ativo');
-      
-      // Fecha modal ao clicar no botão
-      modalBotao.onclick = function(){
-        modal.classList.remove('ativo');
-      };
-      
-      // Fecha ao clicar no overlay
-      modal.onclick = function(e){
-        if(e.target === modal){
-          modal.classList.remove('ativo');
-        }
-      };
-      
-      // Limpa o formulário
-      document.getElementById('form').reset();
-      document.getElementById('uploadTxt').textContent = T[lang].up_txt;
-      document.getElementById('dadosInvoiceBox').classList.remove('oculto');
-      document.getElementById('dadosInvoice').required = true;
-      document.getElementById('outrosBox').style.display = 'none';
-    })
-    .catch(function(err){
-      alert('❌ Erro ao enviar: ' + err.message + '\nVerifique a URL do Apps Script e tente novamente.');
-    })
-    .finally(function(){
-      btn.textContent = textoOriginal;
-      btn.disabled = false;
+    // ===== 4) Monta e abre o e-mail (destinatário, assunto e resumo) =====
+    var destinatario = 'mesadeoperacoes@sttart.com.br';
+    var assunto = 'Nova Solicitação de Pagamento Internacional';
+
+    var linhas = [
+      'Uma nova solicitação de pagamento internacional foi recebida.',
+      '',
+      'RESUMO DOS DADOS PREENCHIDOS',
+      '----------------------------------------'
+    ];
+    ordem.forEach(function(k){
+      var v = campos[k];
+      if (v !== undefined && v !== null && String(v).trim() !== '') {
+        linhas.push(ROTULOS[k] + ': ' + v);
+      }
     });
+    linhas.push('----------------------------------------');
+    linhas.push('');
+    linhas.push('ANEXAR A ESTE E-MAIL antes de enviar:');
+    linhas.push('1) Planilha Excel gerada automaticamente (baixada agora).');
+    linhas.push(arquivo ? ('2) Arquivo da invoice: ' + arquivo.name)
+                        : '2) (Nenhum arquivo de invoice foi anexado no formulário)');
+
+    var mailto = 'mailto:' + destinatario +
+                 '?subject=' + encodeURIComponent(assunto) +
+                 '&body='   + encodeURIComponent(linhas.join('\n'));
+    window.location.href = mailto;
+
+    // ===== 5) Mensagem de sucesso (usa o modal já existente) =====
+    var msgs = {
+      pt: 'Solicitação enviada com sucesso.',
+      en: 'Request sent successfully.',
+      es: 'Solicitud enviada con éxito.'
+    };
+    var modal      = document.getElementById('modalSucesso');
+    var modalMsg   = document.getElementById('modalMsg');
+    var modalBotao = document.getElementById('modalBotao');
+    if (modalMsg)  modalMsg.innerHTML = msgs[lang] || msgs.pt;
+    if (modal)     modal.classList.add('ativo');
+    if (modalBotao) modalBotao.onclick = function(){ modal.classList.remove('ativo'); };
+    if (modal)     modal.onclick = function(ev){ if (ev.target === modal) modal.classList.remove('ativo'); };
+
+    // Limpa o formulário (mesmo comportamento de antes)
+    form.reset();
+    document.getElementById('uploadTxt').textContent = T[lang].up_txt;
+    document.getElementById('dadosInvoiceBox').classList.remove('oculto');
+    document.getElementById('dadosInvoice').required = true;
+
+    btn.textContent = textoOriginal;
+    btn.disabled = false;
   });
 
   setLang('pt');
