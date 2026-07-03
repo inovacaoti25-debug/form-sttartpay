@@ -718,7 +718,7 @@
      Cole aqui a URL gerada pelo Google Apps Script.
      Exemplo: https://script.google.com/macros/s/AKfy.../exec
   =================================================== */
-  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0IE1usTlAKbECmPUiLYX18KVSFBDhX4Bl8dxnhmE5R3aq_AqwfQ1X_0cRmlUIUmLa3A/exec";
+  var SCRIPT_URL = https://script.google.com/macros/s/AKfycbw0IE1usTlAKbECmPUiLYX18KVSFBDhX4Bl8dxnhmE5R3aq_AqwfQ1X_0cRmlUIUmLa3A/exec;
 
   /* Submit → envia dados para o Google Sheets */
   document.getElementById('form').addEventListener('submit', function(e){
@@ -764,9 +764,9 @@
       
       // Define mensagem (multilíngue)
       const msgs = {
-        'pt': 'Sua Ordem de Pagamento foi enviada com sucesso.<br>Os dados foram registrados em Google Sheets e o PDF foi gerado em Google Drive.',
-        'en': 'Your Payment Order was sent successfully.<br>Data was recorded in Google Sheets and PDF was generated in Google Drive.',
-        'es': 'Su Orden de Pago fue enviada exitosamente.<br>Los datos fueron registrados en Google Sheets y el PDF fue generado en Google Drive.'
+        'pt': 'Sua Ordem de Pagamento foi enviada com sucesso.',
+        'en': 'Your Payment Order was sent successfully.',
+        'es': 'Su Orden de Pago fue enviada exitosamente.'
       };
       
       modalMsg.innerHTML = msgs[lang] || msgs['pt'];
@@ -818,4 +818,3 @@
 
 </body>
 </html>
-  
