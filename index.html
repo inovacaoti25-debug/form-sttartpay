@@ -361,7 +361,13 @@
       </fieldset>
 
       <div class="acoes">
-        <button type="submit" data-i18n="btn_enviar">Enviar Ordem de Pagamento</button>
+        <div style="margin-bottom: 20px;">
+          <label style="display: flex; align-items: flex-start; gap: 12px; margin: 0; font-size: 11px; line-height: 1.5; cursor: pointer; text-align: justify;">
+            <input type="checkbox" id="concordo" name="concordo" style="margin-top: 2px; flex-shrink: 0; width: 18px; height: 18px; cursor: pointer;" required>
+            <span>Declaro que li, compreendi e estou plenamente ciente de todas as condições, termos e disposições estabelecidos neste documento, concordando integralmente com seu conteúdo e assumindo total responsabilidade pelo seu fiel cumprimento.</span>
+          </label>
+        </div>
+        <button type="submit" data-i18n="btn_enviar">Enviar</button>
         <span class="obrig"><span class="req">*</span> <span data-i18n="obrig">Campos obrigatórios</span></span>
       </div>
     </form>
@@ -420,7 +426,7 @@
       inv_badge:"Dados da Invoice", l_inv:"Preencha os dados da invoice",
       h_inv:"Use este campo caso o cliente não tenha o arquivo e só tenha os dados (ex.: enviados por WhatsApp). Este campo só fica obrigatório quando não houver upload da invoice acima.",
       ph_inv:"Nº da invoice, data, descrição da mercadoria/serviço, valor, moeda, Incoterm...",
-      btn_enviar:"Enviar Ordem de Pagamento", obrig:"Campos obrigatórios",
+      btn_enviar:"Enviar", obrig:"Campos obrigatórios",
       ajuda_btn:"FAQ", ajuda_tag:"Perguntas frequentes · SttartPay",
       aba_mandamentos:"10 Mandamentos", aba_devolucoes:"Regras de Devolução",
       doc_titulo:"Os 10 Mandamentos da Ordem de Pagamento", doc_sub:"Regras de Controle de Envio e Atividade", sumario:"Sumário",
@@ -455,7 +461,7 @@
       inv_badge:"Invoice Data", l_inv:"Fill in the invoice data",
       h_inv:"Use this field if the client does not have the file and only has the data (e.g., sent via WhatsApp). This field becomes mandatory only when there is no invoice upload above.",
       ph_inv:"Invoice no., date, description of goods/service, amount, currency, Incoterm...",
-      btn_enviar:"Submit Payment Order", obrig:"Required fields",
+      btn_enviar:"Submit", obrig:"Required fields",
       ajuda_btn:"FAQ", ajuda_tag:"Frequently asked questions · SttartPay",
       aba_mandamentos:"10 Commandments", aba_devolucoes:"Refund Rules",
       doc_titulo:"The 10 Commandments of the Payment Order", doc_sub:"Rules for Sending Control and Activity", sumario:"Contents",
@@ -490,7 +496,7 @@
       inv_badge:"Datos de la Invoice", l_inv:"Complete los datos de la invoice",
       h_inv:"Use este campo si el cliente no tiene el archivo y solo tiene los datos (p. ej., enviados por WhatsApp). Este campo solo es obligatorio cuando no hay carga de invoice arriba.",
       ph_inv:"N.º de invoice, fecha, descripción de mercancía/servicio, valor, moneda, Incoterm...",
-      btn_enviar:"Enviar Orden de Pago", obrig:"Campos obligatorios",
+      btn_enviar:"Enviar", obrig:"Campos obligatorios",
       ajuda_btn:"FAQ", ajuda_tag:"Preguntas frecuentes · SttartPay",
       aba_mandamentos:"10 Mandamientos", aba_devolucoes:"Reglas de Reembolso",
       doc_titulo:"Los 10 Mandamientos de la Orden de Pago", doc_sub:"Reglas de Control de Envío y Actividad", sumario:"Sumario",
@@ -722,134 +728,88 @@
   var SCRIPT_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
   /* Submit → envia dados para o Google Sheets */
-  /* Submit → modo sem backend: gera Excel, abre e-mail e confirma */
+  /* Submit → Envia para Google Apps Script com arquivo */
   document.getElementById('form').addEventListener('submit', function(e){
     e.preventDefault();
 
     var form = this;
     var btn  = form.querySelector('button[type="submit"]');
-    var textoOriginal = btn.textContent;
-
-    // Rótulos das colunas (uma por campo existente do formulário)
-    var ROTULOS = {
-      nome_beneficiario:        'Nome do Beneficiário',
-      endereco_beneficiario:    'Endereço do Beneficiário',
-      pais:                     'País',
-      natureza_operacao:        'Natureza de Operação',
-      natureza_operacao_outros: 'Natureza de Operação (Outros)',
-      conta:                    'Número da Conta',
-      iban:                     'IBAN',
-      aba:                      'Número ABA / Routing',
-      swift:                    'Código SWIFT / BIC',
-      banco:                    'Banco Destinatário',
-      pais_banco:               'País do Banco',
-      valor_total:              'Valor Total',
-      moeda:                    'Moeda',
-      banco_intermediario:      'Banco Intermediário',
-      swift_intermediario:      'Código SWIFT / BIC do Intermediário',
-      conta_intermediario:      'Conta / ABA / Routing (Intermediário)',
-      iban_intermediario:       'IBAN do Intermediário',
-      pais_intermediario:       'País do Banco Intermediário',
-      contato:                  'Contato',
-      telefone:                 'Telefone',
-      email:                    'E-mail',
-      dados_invoice:            'Dados da Invoice',
-      arquivo_invoice:          'Arquivo da Invoice'
-    };
-
-    // ===== 1) Valida o arquivo (PDF/JPG/JPEG/PNG, máx. 10 MB) =====
-    var fileInput = document.getElementById('invoiceFile');
-    var arquivo = (fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null;
-    if (arquivo) {
-      var extOk = /\.(pdf|jpe?g|png)$/i.test(arquivo.name);
-      if (!extOk) {
-        alert('Tipo de arquivo não permitido. Envie apenas PDF, JPG, JPEG ou PNG.');
-        return;
-      }
-      if (arquivo.size > 10 * 1024 * 1024) {
-        alert('O arquivo excede o tamanho máximo de 10 MB.');
-        return;
-      }
+    
+    // ===== VALIDA CHECKBOX DE CONCORDÂNCIA =====
+    var checkbox = document.getElementById('concordo');
+    if (!checkbox || !checkbox.checked) {
+      alert('Por favor, marque a caixa de concordância para continuar.');
+      return;
     }
 
-    btn.textContent = '⏳ Gerando...';
+    var textoOriginal = btn.textContent;
+    btn.textContent = '⏳ Enviando...';
     btn.disabled = true;
 
-    // ===== 2) Lê todos os campos existentes do formulário =====
-    var fd = new FormData(form);
-    var campos = {};
-    fd.forEach(function(val, key){ if (key !== 'invoice_file') campos[key] = val; });
-    campos['arquivo_invoice'] = arquivo ? arquivo.name : '';
+    // Coleta dados como FormData (permite arquivo)
+    var formData = new FormData(form);
 
-    // Ordem fixa das colunas (segue os campos do formulário)
-    var ordem = Object.keys(ROTULOS);
-    var headers = ordem.map(function(k){ return ROTULOS[k]; });
-    var valores = ordem.map(function(k){ return campos[k] !== undefined ? campos[k] : ''; });
-
-    // ===== 3) Gera e baixa o Excel (uma coluna por campo) =====
-    try {
-      var ws = XLSX.utils.aoa_to_sheet([headers, valores]);
-      var wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Solicitacao');
-      var hoje = new Date().toISOString().slice(0, 10);
-      XLSX.writeFile(wb, 'Solicitacao_Pagamento_Internacional_' + hoje + '.xlsx');
-    } catch (err) {
-      alert('Erro ao gerar o Excel: ' + err.message);
+    // Verifica se a URL foi configurada
+    if(!SCRIPT_URL || SCRIPT_URL === 'COLE_AQUI_A_URL_DO_APPS_SCRIPT'){
+      alert('⚠️ Configure a variável SCRIPT_URL no HTML com a URL do seu Google Apps Script.');
       btn.textContent = textoOriginal;
       btn.disabled = false;
       return;
     }
 
-    // ===== 4) Monta e abre o e-mail (destinatário, assunto e resumo) =====
-    var destinatario = 'mesadeoperacoes@sttart.com.br';
-    var assunto = 'Nova Solicitação de Pagamento Internacional';
-
-    var linhas = [
-      'Uma nova solicitação de pagamento internacional foi recebida.',
-      '',
-      'RESUMO DOS DADOS PREENCHIDOS',
-      '----------------------------------------'
-    ];
-    ordem.forEach(function(k){
-      var v = campos[k];
-      if (v !== undefined && v !== null && String(v).trim() !== '') {
-        linhas.push(ROTULOS[k] + ': ' + v);
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      payload: formData
+    })
+    .then(function(response) {
+      return response.json();
+    })
+    .then(function(result) {
+      if (result.status === 'sucesso') {
+        // Mostra modal elegante
+        const modal = document.getElementById('modalSucesso');
+        const modalMsg = document.getElementById('modalMsg');
+        const modalBotao = document.getElementById('modalBotao');
+        
+        // Define mensagem (multilíngue)
+        const msgs = {
+          'pt': 'Solicitação enviada com sucesso.',
+          'en': 'Request sent successfully.',
+          'es': 'Solicitud enviada con éxito.'
+        };
+        
+        modalMsg.innerHTML = msgs[lang] || msgs['pt'];
+        modal.classList.add('ativo');
+        
+        // Fecha modal ao clicar no botão
+        modalBotao.onclick = function(){
+          modal.classList.remove('ativo');
+        };
+        
+        // Fecha ao clicar no overlay
+        modal.onclick = function(e){
+          if(e.target === modal){
+            modal.classList.remove('ativo');
+          }
+        };
+        
+        // Limpa o formulário
+        form.reset();
+        document.getElementById('uploadTxt').textContent = T[lang].up_txt;
+        document.getElementById('dadosInvoiceBox').classList.remove('oculto');
+        document.getElementById('dadosInvoice').required = true;
+        document.getElementById('outrosBox').style.display = 'none';
+      } else {
+        alert('❌ Erro: ' + (result.msg || 'Erro desconhecido'));
       }
+    })
+    .catch(function(err){
+      alert('❌ Erro ao enviar: ' + err.message);
+    })
+    .finally(function(){
+      btn.textContent = textoOriginal;
+      btn.disabled = false;
     });
-    linhas.push('----------------------------------------');
-    linhas.push('');
-    linhas.push('ANEXAR A ESTE E-MAIL antes de enviar:');
-    linhas.push('1) Planilha Excel gerada automaticamente (baixada agora).');
-    linhas.push(arquivo ? ('2) Arquivo da invoice: ' + arquivo.name)
-                        : '2) (Nenhum arquivo de invoice foi anexado no formulário)');
-
-    var mailto = 'mailto:' + destinatario +
-                 '?subject=' + encodeURIComponent(assunto) +
-                 '&body='   + encodeURIComponent(linhas.join('\n'));
-    window.location.href = mailto;
-
-    // ===== 5) Mensagem de sucesso (usa o modal já existente) =====
-    var msgs = {
-      pt: 'Solicitação enviada com sucesso.',
-      en: 'Request sent successfully.',
-      es: 'Solicitud enviada con éxito.'
-    };
-    var modal      = document.getElementById('modalSucesso');
-    var modalMsg   = document.getElementById('modalMsg');
-    var modalBotao = document.getElementById('modalBotao');
-    if (modalMsg)  modalMsg.innerHTML = msgs[lang] || msgs.pt;
-    if (modal)     modal.classList.add('ativo');
-    if (modalBotao) modalBotao.onclick = function(){ modal.classList.remove('ativo'); };
-    if (modal)     modal.onclick = function(ev){ if (ev.target === modal) modal.classList.remove('ativo'); };
-
-    // Limpa o formulário (mesmo comportamento de antes)
-    form.reset();
-    document.getElementById('uploadTxt').textContent = T[lang].up_txt;
-    document.getElementById('dadosInvoiceBox').classList.remove('oculto');
-    document.getElementById('dadosInvoice').required = true;
-
-    btn.textContent = textoOriginal;
-    btn.disabled = false;
   });
 
   setLang('pt');
