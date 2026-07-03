@@ -718,7 +718,7 @@
      Cole aqui a URL gerada pelo Google Apps Script.
      Exemplo: https://script.google.com/macros/s/AKfy.../exec
   =================================================== */
-  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0IE1usTlAKbECmPUiLYX18KVSFBDhX4Bl8dxnhmE5R3aq_AqwfQ1X_0cRmlUIUmLa3A/exec";
+  var SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx3IOff9yHzzd3gsym2rMybqFYIgOlE9kc67zBMnLVUdbW_z_afr7TVYl6S2RIi4GE/exec";
 
   /* Submit → envia dados para o Google Sheets */
   document.getElementById('form').addEventListener('submit', function(e){
@@ -775,8 +775,6 @@
       // Fecha modal ao clicar no botão
       modalBotao.onclick = function(){
         modal.classList.remove('ativo');
-        // Abre a pasta do Drive em nova aba
-        window.open('https://drive.google.com/drive/folders/179B8KhStSX43ZPwCuTZ6RuvLN5ScwC1P', '_blank');
       };
       
       // Fecha ao clicar no overlay
