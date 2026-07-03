@@ -759,7 +759,7 @@
 
     fetch(SCRIPT_URL, {
       method: 'POST',
-      payload: formData
+      body: formData
     })
     .then(function(response) {
       return response.json();
