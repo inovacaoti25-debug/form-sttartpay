@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="docTitle">Formulário de Pagamento Internacional</title>
+<style>
+  :root{
+    --vermelho:#e11919;--tinta:#1c1c1e;--cinza:#6b7280;--linha:#e3e6ea;
+    --fundo:#f4f5f7;--campo:#ffffff;--azul:#0f5ad6;--verde:#16a34a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--fundo);color:var(--tinta);line-height:1.45;padding:32px 16px}
+  .folha{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--linha);border-radius:14px;box-shadow:0 8px 30px rgba(20,20,30,.06);overflow:hidden}
+  header{padding:30px 36px 22px;border-bottom:3px solid var(--vermelho);display:flex;align-items:center;gap:16px}
+  .logo{width:46px;height:46px;border-radius:11px;background:var(--vermelho);color:#fff;font-weight:800;font-size:24px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  h1{font-size:25px;font-weight:800;letter-spacing:.2px}
+  h1 .blk{color:var(--tinta)}
+  h1 .red{color:var(--vermelho)}
+  .sub{font-size:13px;color:var(--cinza);margin-top:2px}
+  form{padding:10px 36px 36px}
+  fieldset{border:none;margin-top:26px}
+  legend{font-size:12px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--vermelho);padding-bottom:10px;margin-bottom:6px;width:100%;border-bottom:1px solid var(--linha)}
+  legend .num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--vermelho);color:#fff;font-size:11px;margin-right:8px;vertical-align:middle}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-top:16px}
+  .full{grid-column:1 / -1}
+  label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+  .req{color:var(--vermelho)}
+  .hint{font-weight:400;color:var(--cinza);font-size:11.5px;display:block;margin-top:2px}
+  input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--linha);border-radius:9px;font-size:14px;font-family:inherit;background:var(--campo);color:var(--tinta);transition:border-color .15s,box-shadow .15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(15,90,214,.12)}
+  textarea{resize:vertical;min-height:96px}
+  .upload{border:1.5px dashed var(--linha);border-radius:9px;padding:16px;text-align:center;background:#fafbfc;font-size:13px;color:var(--cinza);cursor:pointer}
+  .upload:hover{border-color:var(--azul);color:var(--azul)}
+  .upload input{display:none}
+  .invoice-box{margin-top:14px;padding:14px;border-radius:9px;background:#fff7ed;border:1px solid #fed7aa}
+  .invoice-box.oculto{display:none}
+  .invoice-box .badge{font-size:11px;font-weight:700;color:#c2410c;text-transform:uppercase;letter-spacing:.6px}
+  .nota{margin-top:8px;font-size:12px;color:var(--cinza);background:#f8f9fb;border-left:3px solid var(--vermelho);padding:9px 12px;border-radius:0 8px 8px 0}
+  .acoes{margin-top:30px;display:flex;gap:12px;align-items:center}
+  button{background:var(--vermelho);color:#fff;border:none;padding:13px 26px;border-radius:9px;font-size:14.5px;font-weight:700;cursor:pointer;font-family:inherit}
+  button:hover{filter:brightness(.93)}
+  .obrig{font-size:12px;color:var(--cinza)}
+
+  /* Seletor de idioma */
+  .langs{position:fixed;right:24px;top:74px;z-index:60;display:flex;gap:2px;background:#fff;border:1px solid var(--linha);border-radius:50px;padding:2px;box-shadow:0 3px 10px rgba(20,20,30,.08)}
+  .lang{background:none;border:none;padding:3px 8px;border-radius:50px;font-size:11px;font-weight:700;color:var(--cinza);cursor:pointer}
+  .lang.ativo{background:var(--vermelho);color:#fff}
+
+  /* Botão de ajuda */
+  .ajuda-btn{position:fixed;right:24px;top:24px;z-index:60;display:flex;align-items:center;gap:9px;background:var(--vermelho);color:#fff;border:none;cursor:pointer;padding:13px 18px;border-radius:50px;font-weight:700;font-size:14px;box-shadow:0 8px 24px rgba(225,25,25,.35);font-family:inherit}
+  .ajuda-btn:hover{filter:brightness(.93)}
+  .ajuda-btn .ic{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800}
+  .overlay{position:fixed;inset:0;background:rgba(15,15,25,.45);z-index:70;opacity:0;pointer-events:none;transition:opacity .2s}
+  .overlay.aberto{opacity:1;pointer-events:auto}
+  .painel{position:fixed;top:0;right:0;height:100%;width:480px;max-width:92vw;z-index:80;background:#fff;box-shadow:-12px 0 40px rgba(20,20,30,.18);transform:translateX(100%);transition:transform .26s ease;display:flex;flex-direction:column}
+  .painel.aberto{transform:translateX(0)}
+  .painel-top{padding:8px 12px;border-bottom:2px solid var(--vermelho);display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .painel-top h2{font-size:13px;font-weight:800;line-height:1.15}
+  .painel-top .tag{font-size:8px;color:var(--cinza);font-weight:600;margin-top:0}
+  .fechar{background:none;border:none;font-size:18px;line-height:1;color:var(--cinza);cursor:pointer;padding:0;flex:0 0 auto;width:20px;height:20px;display:flex;align-items:center;justify-content:center}
+
+  /* Abas no painel */
+  .painel-abas{display:flex;gap:0;border-bottom:1px solid var(--linha);padding:0 8px;background:#fafbfc;margin:0 -8px;margin-bottom:0}
+  .painel-aba{background:none;border:none;padding:6px 8px;font-size:9px;font-weight:700;color:var(--cinza);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .painel-aba:hover{color:var(--vermelho)}
+  .painel-aba.ativa{color:var(--vermelho);border-bottom-color:var(--vermelho)}
+
+  /* Botão voltar ao topo */
+  .voltar-topo{display:block;width:100%;background:var(--vermelho);color:#fff;border:none;padding:10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;margin-top:12px;text-align:center;text-transform:uppercase;letter-spacing:.5px}
+  .voltar-topo:hover{filter:brightness(.93)}
+
+.painel-corpo{padding:6px 10px 12px;overflow-y:auto;scroll-behavior:smooth;flex:1 1 auto;font-size:12px}
+  .doc-titulo{font-size:12px;font-weight:800;margin:3px 0 0;line-height:1.1}
+  .doc-sub{font-size:10px;color:var(--cinza);font-weight:600;margin-bottom:4px;display:none}
+  .sumario{background:#f8f9fb;border:1px solid var(--linha);border-radius:6px;padding:8px 10px;margin:0 0 8px;display:block}
+  .sumario h4{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--cinza);margin-bottom:6px}
+  .sumario ol{list-style:none;counter-reset:s;margin:0}
+  .sumario li{counter-increment:s;padding:3px 0;border-bottom:1px dashed var(--linha)}
+  .sumario li:last-child{border-bottom:none}
+  .sumario a{display:flex;gap:4px;align-items:baseline;text-decoration:none;color:#374151;font-size:11px;cursor:pointer}
+  .sumario a:hover{color:var(--vermelho);font-weight:600}
+  .sumario a::before{content:counter(s);flex:0 0 auto;width:16px;height:16px;border-radius:2px;background:#fff;border:1px solid var(--linha);color:var(--vermelho);font-weight:800;font-size:8px;display:flex;align-items:center;justify-content:center}
+  .mand{padding:6px 0;border-bottom:1px solid var(--linha);scroll-margin-top:4px}
+  .mand h3{font-size:12px;font-weight:800;color:var(--vermelho);display:flex;gap:5px;align-items:flex-start;margin:0 0 2px}
+  .mand h3 .n{flex:0 0 auto;width:18px;height:18px;border-radius:3px;background:var(--vermelho);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .mand p{font-size:12px;color:#374151;margin:2px 0;line-height:1.3}
+  .mand ul{list-style:none;margin:2px 0 0;font-size:12px;color:#374151;line-height:1.3}
+  .mand li{padding:0 0 0 16px;position:relative;margin:1px 0}
+  .mand .alerta{margin-top:4px;font-size:11px;font-style:italic;color:#9a3412;background:#fff7ed;border-left:2px solid var(--vermelho);padding:4px 6px;border-radius:0 4px 4px 0;line-height:1.2}
+  .mand:last-child{border-bottom:none}
+  .final{margin-top:8px;background:#1c1c1e;color:#fff;border-radius:6px;padding:8px;font-size:11px;line-height:1.25}
+  .final h3{color:#fff;font-size:12px;font-weight:800;letter-spacing:.1px;margin:0 0 3px}
+  .final p{font-size:11px;color:#d4d4d8;margin:0;line-height:1.25}
+  .final .slogan{margin-top:4px;font-size:10px;font-weight:700;color:#fca5a5;text-align:center;line-height:1.2}
+  
+  .regra{padding:6px 0;border-bottom:1px solid var(--linha);scroll-margin-top:4px}
+  .regra h3{font-size:12px;font-weight:800;color:var(--vermelho);display:flex;gap:5px;align-items:flex-start;margin:0 0 2px}
+  .regra h3 .n{flex:0 0 auto;width:18px;height:18px;border-radius:3px;background:var(--vermelho);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .regra p{font-size:12px;color:#374151;line-height:1.3;margin:0}
+  .regra ul{list-style:none;margin:2px 0 0;font-size:12px;color:#374151;line-height:1.3}
+  .regra li{padding:0 0 0 16px;position:relative;margin:1px 0}
+  .regra:last-child{border-bottom:none}
+
+  @media(max-width:560px){.grid{grid-template-columns:1fr}header,form{padding-left:22px;padding-right:22px}.langs{right:16px;top:68px}.ajuda-btn{right:16px;top:16px}.painel{width:100%}}
+</style>
+</head>
+<body>
+
+  <div class="langs">
+    <button class="lang ativo" type="button" data-lang="pt">PT</button>
+    <button class="lang" type="button" data-lang="en">EN</button>
+    <button class="lang" type="button" data-lang="es">ES</button>
+  </div>
+
+  <div class="folha">
+    <header>
+      <div class="logo">S</div>
+      <div>
+        <h1><span class="blk" data-i18n="h1a">Formulário de </span><span class="red" data-i18n="h1b">Pagamento Internacional</span></h1>
+        <div class="sub" data-i18n="sub">Sttart Pay &middot; Ordem de Pagamento &middot; Operações Cross-Border</div>
+      </div>
+    </header>
+
+    <form id="form" method="POST" action="#">
+
+      <!-- 1 BENEFICIÁRIO -->
+      <fieldset>
+        <legend><span class="num">1</span><span data-i18n="s1">Dados do Beneficiário</span></legend>
+        <div class="grid">
+          <div class="full">
+            <label><span data-i18n="l_nome">Nome do Beneficiário</span> <span class="req">*</span>
+              <span class="hint" data-i18n="h_nome">Exatamente como consta no banco.</span></label>
+            <input type="text" name="nome_beneficiario" required>
+          </div>
+          <div class="full">
+            <label><span data-i18n="l_endereco">Endereço do Beneficiário</span> <span class="req">*</span></label>
+            <input type="text" name="endereco_beneficiario" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_pais">País</span> <span class="req">*</span></label>
+            <input type="text" name="pais" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_natureza">Natureza de Operação</span> <span class="req">*</span></label>
+            <select name="natureza_operacao" id="natureza" required>
+              <option value="" selected disabled data-i18n="ph_natureza">Selecione a natureza de operação...</option>
+              <option data-i18n="opt1">46.19-2/00 – Representantes Comerciais e Agentes do Comércio de Mercadorias em Geral (Core business de trading internacional)</option>
+              <option data-i18n="opt2">46.79-6/99 – Comércio Atacadista de Materiais de Construção em Geral (Ferragens, componentes ou acabamentos)</option>
+              <option data-i18n="opt3">46.49-4/99 – Comércio Atacadista de Outros Artigos de Uso Pessoal e Doméstico (Bens de consumo e utilidades)</option>
+              <option data-i18n="opt4">46.19-2/00 – Representantes Comerciais e Agentes do Comércio de Mercadorias em Geral (Atuação como Trading e Sourcing)</option>
+              <option data-i18n="opt5">52.50-8/02 – Atividades de Agenciamento de Cargas, Exceto Marítimo (Coordenação rodoviária e aérea)</option>
+              <option data-i18n="opt6">52.32-0/00 – Atividades de Agenciamento Marítimo (Reserva de praças em navios e contêineres marítimos)</option>
+              <option data-i18n="opt7">22.19-6/00 – Fabricação de Artefatos de Borracha Não Especificados (Coxins, buchas, gaxetas, retentores e mangueiras)</option>
+              <option data-i18n="opt8">46.63-0/00 – Comércio Atacadista de Máquinas e Equipamentos para Uso Industrial; Partes e Peças</option>
+              <option data-i18n="opt9">50.11-4/01 – Transporte Marítimo de Longo Curso – Carga (Operação de navios porta-contêineres internacionais)</option>
+              <option value="Outros" data-i18n="opt_outros">Outros</option>
+            </select>
+          </div>
+          <div class="full" id="outrosBox" style="display:none">
+            <label><span data-i18n="l_outros">Especifique a natureza de operação</span> <span class="req">*</span></label>
+            <input type="text" name="natureza_operacao_outros" id="naturezaOutros" data-i18n-ph="ph_outros" placeholder="Descreva a natureza de operação">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 2 BANCÁRIOS BENEFICIÁRIO -->
+      <fieldset>
+        <legend><span class="num">2</span><span data-i18n="s2">Dados Bancários do Beneficiário</span></legend>
+        <div class="grid">
+          <div>
+            <label><span data-i18n="l_conta">Número da Conta</span> <span class="req">*</span></label>
+            <input type="text" name="conta" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_iban">IBAN</span> <span class="hint" style="display:inline" data-i18n="qa">(quando aplicável)</span></label>
+            <input type="text" name="iban">
+          </div>
+          <div>
+            <label><span data-i18n="l_aba">Número ABA / Routing</span> <span class="hint" style="display:inline" data-i18n="qa">(quando aplicável)</span></label>
+            <input type="text" name="aba">
+          </div>
+          <div>
+            <label><span data-i18n="l_swift">Código SWIFT / BIC</span> <span class="req">*</span></label>
+            <input type="text" name="swift" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_banco">Banco Destinatário</span> <span class="req">*</span></label>
+            <input type="text" name="banco" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_pais_banco">País do Banco</span> <span class="req">*</span></label>
+            <input type="text" name="pais_banco" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_valor">Valor Total</span> <span class="req">*</span></label>
+            <input type="number" step="0.01" min="0" name="valor_total" id="valorTotal" required>
+          </div>
+          <div>
+            <label><span data-i18n="l_moeda">Moeda</span> <span class="req">*</span></label>
+            <select name="moeda" id="moeda" required>
+              <option value="USD" selected>USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+              <option value="CHF">CHF</option>
+              <option value="CNY">CNY</option>
+              <option value="JPY">JPY</option>
+              <option value="CAD">CAD</option>
+              <option value="AUD">AUD</option>
+              <option value="AED">AED</option>
+              <option value="HKD">HKD</option>
+              <option value="MXN">MXN</option>
+            </select>
+          </div>
+        </div>
+        <div class="nota" data-i18n="nota2">Confira cada caractere: um único caractere incorreto pode resultar em devolução ou investigação bancária. (1º Mandamento da Ordem de Pagamento)</div>
+      </fieldset>
+
+      <!-- 3 BANCO INTERMEDIÁRIO -->
+      <fieldset>
+        <legend><span class="num">3</span><span data-i18n="s3">Dados do Banco Intermediário</span></legend>
+        <div class="grid">
+          <div class="full">
+            <label><span data-i18n="l_banco_int">Banco Intermediário</span>
+              <span class="hint" data-i18n="h_banco_int">Preencher somente quando o pagamento exigir banco intermediário/correspondente.</span></label>
+            <input type="text" name="banco_intermediario">
+          </div>
+          <div>
+            <label><span data-i18n="l_swift_int">Código SWIFT / BIC do Intermediário</span></label>
+            <input type="text" name="swift_intermediario">
+          </div>
+          <div>
+            <label><span data-i18n="l_conta_int">Conta / ABA / Routing</span> <span class="hint" style="display:inline" data-i18n="qa">(quando aplicável)</span></label>
+            <input type="text" name="conta_intermediario">
+          </div>
+          <div>
+            <label><span data-i18n="l_iban_int">IBAN do Intermediário</span> <span class="hint" style="display:inline" data-i18n="qa">(quando aplicável)</span></label>
+            <input type="text" name="iban_intermediario">
+          </div>
+          <div>
+            <label><span data-i18n="l_pais_int">País do Banco Intermediário</span></label>
+            <input type="text" name="pais_intermediario">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 4 CONTATO (opcional) -->
+      <fieldset>
+        <legend><span class="num">4</span><span data-i18n="s4">Contato do Beneficiário</span> <span class="hint" style="display:inline;text-transform:none;letter-spacing:0" data-i18n="opcional">(opcional)</span></legend>
+        <div class="grid">
+          <div>
+            <label><span data-i18n="l_contato">Contato</span></label>
+            <input type="text" name="contato">
+          </div>
+          <div>
+            <label><span data-i18n="l_tel">Telefone</span></label>
+            <input type="tel" name="telefone">
+          </div>
+          <div class="full">
+            <label><span data-i18n="l_email">E-mail</span></label>
+            <input type="email" name="email">
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- 5 INVOICE -->
+      <fieldset>
+        <legend><span class="num">5</span><span data-i18n="s5">Invoice</span></legend>
+        <div class="grid">
+          <div class="full">
+            <label><span data-i18n="l_upload">Upload da Invoice</span></label>
+            <label class="upload" id="dropInvoice">
+              <span id="uploadTxt" data-i18n="up_txt">Clique para anexar a invoice (PDF, JPG ou PNG)</span>
+              <input type="file" id="invoiceFile" name="invoice_file" accept=".pdf,.jpg,.jpeg,.png">
+            </label>
+          </div>
+        </div>
+        <div class="invoice-box" id="dadosInvoiceBox">
+          <span class="badge" data-i18n="inv_badge">Dados da Invoice</span>
+          <label style="margin-top:8px"><span data-i18n="l_inv">Preencha os dados da invoice</span> <span class="req">*</span>
+            <span class="hint" data-i18n="h_inv">Use este campo caso o cliente não tenha o arquivo e só tenha os dados (ex.: enviados por WhatsApp). Este campo só fica obrigatório quando não houver upload da invoice acima.</span></label>
+          <textarea name="dados_invoice" id="dadosInvoice" data-i18n-ph="ph_inv" placeholder="Nº da invoice, data, descrição da mercadoria/serviço, valor, moeda, Incoterm..."></textarea>
+        </div>
+      </fieldset>
+
+      <div class="acoes">
+        <button type="submit" data-i18n="btn_enviar">Enviar Ordem de Pagamento</button>
+        <span class="obrig"><span class="req">*</span> <span data-i18n="obrig">Campos obrigatórios</span></span>
+      </div>
+    </form>
+  </div>
+
+  <!-- AJUDA -->
+  <button class="ajuda-btn" id="ajudaBtn" type="button"><span class="ic">?</span> <span data-i18n="ajuda_btn">FAQ</span></button>
+  <div class="overlay" id="overlay"></div>
+  <aside class="painel" id="painel" aria-hidden="true">
+    <div class="painel-top">
+      <div>
+        <h2 data-i18n="ajuda_btn">Ajuda</h2>
+        <div class="tag" data-i18n="ajuda_tag">Perguntas frequentes &middot; SttartPay</div>
+      </div>
+      <button class="fechar" id="fecharBtn" type="button" aria-label="Fechar">&times;</button>
+    </div>
+    
+    <!-- Abas do painel -->
+    <div class="painel-abas">
+      <button class="painel-aba ativa" data-aba="devolucoes" data-i18n="aba_devolucoes">Regras de Devolução</button>
+      <button class="painel-aba" data-aba="mandamentos" data-i18n="aba_mandamentos">10 Mandamentos</button>
+    </div>
+
+    <div class="painel-corpo" id="painelCorpo"></div>
+  </aside>
+
+<script>
+  /* ===== Traduções ===== */
+  var T = {
+    pt:{
+      doctitle:"Formulário de Pagamento Internacional",
+      h1a:"Formulário de ", h1b:"Pagamento Internacional",
+      sub:"Sttart Pay · Ordem de Pagamento · Operações Cross-Border",
+      s1:"Dados do Beneficiário", l_nome:"Nome do Beneficiário", h_nome:"Exatamente como consta no banco.",
+      l_endereco:"Endereço do Beneficiário", l_pais:"País", l_natureza:"Natureza de Operação",
+      ph_natureza:"Selecione a natureza de operação...",
+      opt1:"46.19-2/00 – Representantes Comerciais e Agentes do Comércio de Mercadorias em Geral (Core business de trading internacional)",
+      opt2:"46.79-6/99 – Comércio Atacadista de Materiais de Construção em Geral (Ferragens, componentes ou acabamentos)",
+      opt3:"46.49-4/99 – Comércio Atacadista de Outros Artigos de Uso Pessoal e Doméstico (Bens de consumo e utilidades)",
+      opt4:"46.19-2/00 – Representantes Comerciais e Agentes do Comércio de Mercadorias em Geral (Atuação como Trading e Sourcing)",
+      opt5:"52.50-8/02 – Atividades de Agenciamento de Cargas, Exceto Marítimo (Coordenação rodoviária e aérea)",
+      opt6:"52.32-0/00 – Atividades de Agenciamento Marítimo (Reserva de praças em navios e contêineres marítimos)",
+      opt7:"22.19-6/00 – Fabricação de Artefatos de Borracha Não Especificados (Coxins, buchas, gaxetas, retentores e mangueiras)",
+      opt8:"46.63-0/00 – Comércio Atacadista de Máquinas e Equipamentos para Uso Industrial; Partes e Peças",
+      opt9:"50.11-4/01 – Transporte Marítimo de Longo Curso – Carga (Operação de navios porta-contêineres internacionais)",
+      opt_outros:"Outros", l_outros:"Especifique a natureza de operação", ph_outros:"Descreva a natureza de operação",
+      s2:"Dados Bancários do Beneficiário", l_conta:"Número da Conta", l_iban:"IBAN", l_aba:"Número ABA / Routing",
+      qa:"(quando aplicável)", l_swift:"Código SWIFT / BIC", l_banco:"Banco Destinatário", l_pais_banco:"País do Banco",
+      nota2:"Confira cada caractere: um único caractere incorreto pode resultar em devolução ou investigação bancária. (1º Mandamento da Ordem de Pagamento)",
+      s3:"Dados do Banco Intermediário", l_banco_int:"Banco Intermediário",
+      h_banco_int:"Preencher somente quando o pagamento exigir banco intermediário/correspondente.",
+      l_swift_int:"Código SWIFT / BIC do Intermediário", l_conta_int:"Conta / ABA / Routing", l_pais_int:"País do Banco Intermediário",
+      s4:"Contato do Beneficiário", opcional:"(opcional)", l_contato:"Contato", l_tel:"Telefone", l_email:"E-mail",
+      s_transacao:"Detalhes da Transação", l_valor:"Valor Total", l_moeda:"Moeda",
+      s5:"Invoice", l_upload:"Upload da Invoice", up_txt:"Clique para anexar a invoice (PDF, JPG ou PNG)", troca:"(clique para trocar)",
+      inv_badge:"Dados da Invoice", l_inv:"Preencha os dados da invoice",
+      h_inv:"Use este campo caso o cliente não tenha o arquivo e só tenha os dados (ex.: enviados por WhatsApp). Este campo só fica obrigatório quando não houver upload da invoice acima.",
+      ph_inv:"Nº da invoice, data, descrição da mercadoria/serviço, valor, moeda, Incoterm...",
+      btn_enviar:"Enviar Ordem de Pagamento", obrig:"Campos obrigatórios",
+      ajuda_btn:"FAQ", ajuda_tag:"Perguntas frequentes · SttartPay",
+      aba_mandamentos:"10 Mandamentos", aba_devolucoes:"Regras de Devolução",
+      doc_titulo:"Os 10 Mandamentos da Ordem de Pagamento", doc_sub:"Regras de Controle de Envio e Atividade", sumario:"Sumário",
+      alerta_ok:"Formulário válido ✓\n\nEsta é uma demonstração da estrutura do formulário. Conecte o envio à sua base / dashboard."
+    },
+    en:{
+      doctitle:"International Payment Form",
+      h1a:"International ", h1b:"Payment Form",
+      sub:"Sttart Pay · Payment Order · Cross-Border Operations",
+      s1:"Beneficiary Data", l_nome:"Beneficiary Name", h_nome:"Exactly as it appears at the bank.",
+      l_endereco:"Beneficiary Address", l_pais:"Country", l_natureza:"Nature of Operation",
+      ph_natureza:"Select the nature of operation...",
+      opt1:"46.19-2/00 – Commercial Representatives and Agents of General Merchandise Trade (Core international trading business)",
+      opt2:"46.79-6/99 – Wholesale of General Construction Materials (Hardware, components or finishings)",
+      opt3:"46.49-4/99 – Wholesale of Other Personal and Household Goods (Consumer goods and utilities)",
+      opt4:"46.19-2/00 – Commercial Representatives and Agents of General Merchandise Trade (Trading and Sourcing)",
+      opt5:"52.50-8/02 – Freight Forwarding Activities, Except Maritime (Road and air coordination)",
+      opt6:"52.32-0/00 – Maritime Agency Activities (Booking of space on ships and maritime containers)",
+      opt7:"22.19-6/00 – Manufacture of Rubber Articles Not Elsewhere Specified (Mounts, bushings, gaskets, seals and hoses)",
+      opt8:"46.63-0/00 – Wholesale of Machinery and Equipment for Industrial Use; Parts and Pieces",
+      opt9:"50.11-4/01 – Deep-Sea Maritime Transport – Cargo (Operation of international container ships)",
+      opt_outros:"Other", l_outros:"Specify the nature of operation", ph_outros:"Describe the nature of operation",
+      s2:"Beneficiary Bank Details", l_conta:"Account Number", l_iban:"IBAN", l_aba:"ABA / Routing Number",
+      qa:"(when applicable)", l_swift:"SWIFT / BIC Code", l_banco:"Recipient Bank", l_pais_banco:"Bank Country",
+      nota2:"Check every character: a single incorrect character may result in a return or banking investigation. (1st Commandment of the Payment Order)",
+      s3:"Intermediary Bank Details", l_banco_int:"Intermediary Bank",
+      h_banco_int:"Fill in only when the payment requires an intermediary/correspondent bank.",
+      l_swift_int:"Intermediary SWIFT / BIC Code", l_conta_int:"Account / ABA / Routing", l_pais_int:"Intermediary Bank Country",
+      s4:"Beneficiary Contact", opcional:"(optional)", l_contato:"Contact", l_tel:"Phone", l_email:"Email",
+      s_transacao:"Transaction Details", l_valor:"Total Amount", l_moeda:"Currency",
+      s5:"Invoice", l_upload:"Invoice Upload", up_txt:"Click to attach the invoice (PDF, JPG or PNG)", troca:"(click to change)",
+      inv_badge:"Invoice Data", l_inv:"Fill in the invoice data",
+      h_inv:"Use this field if the client does not have the file and only has the data (e.g., sent via WhatsApp). This field becomes mandatory only when there is no invoice upload above.",
+      ph_inv:"Invoice no., date, description of goods/service, amount, currency, Incoterm...",
+      btn_enviar:"Submit Payment Order", obrig:"Required fields",
+      ajuda_btn:"FAQ", ajuda_tag:"Frequently asked questions · SttartPay",
+      aba_mandamentos:"10 Commandments", aba_devolucoes:"Refund Rules",
+      doc_titulo:"The 10 Commandments of the Payment Order", doc_sub:"Rules for Sending Control and Activity", sumario:"Contents",
+      alerta_ok:"Valid form ✓\n\nThis is a demonstration of the form structure. Connect the submission to your database / dashboard."
+    },
+    es:{
+      doctitle:"Formulario de Pago Internacional",
+      h1a:"Formulario de ", h1b:"Pago Internacional",
+      sub:"Sttart Pay · Orden de Pago · Operaciones Cross-Border",
+      s1:"Datos del Beneficiario", l_nome:"Nombre del Beneficiario", h_nome:"Exactamente como consta en el banco.",
+      l_endereco:"Dirección del Beneficiario", l_pais:"País", l_natureza:"Naturaleza de Operación",
+      ph_natureza:"Seleccione la naturaleza de operación...",
+      opt1:"46.19-2/00 – Representantes Comerciales y Agentes del Comercio de Mercancías en General (Core business de trading internacional)",
+      opt2:"46.79-6/99 – Comercio Mayorista de Materiales de Construcción en General (Herrajes, componentes o acabados)",
+      opt3:"46.49-4/99 – Comercio Mayorista de Otros Artículos de Uso Personal y Doméstico (Bienes de consumo y utilidades)",
+      opt4:"46.19-2/00 – Representantes Comerciales y Agentes del Comercio de Mercancías en General (Actuación como Trading y Sourcing)",
+      opt5:"52.50-8/02 – Actividades de Agenciamiento de Cargas, Excepto Marítimo (Coordinación por carretera y aérea)",
+      opt6:"52.32-0/00 – Actividades de Agenciamiento Marítimo (Reserva de espacios en buques y contenedores marítimos)",
+      opt7:"22.19-6/00 – Fabricación de Artículos de Caucho No Especificados (Tacos, bujes, juntas, retenes y mangueras)",
+      opt8:"46.63-0/00 – Comercio Mayorista de Máquinas y Equipos para Uso Industrial; Partes y Piezas",
+      opt9:"50.11-4/01 – Transporte Marítimo de Larga Distancia – Carga (Operación de buques portacontenedores internacionales)",
+      opt_outros:"Otros", l_outros:"Especifique la naturaleza de operación", ph_outros:"Describa la naturaleza de operación",
+      s2:"Datos Bancarios del Beneficiario", l_conta:"Número de Cuenta", l_iban:"IBAN", l_aba:"Número ABA / Routing",
+      qa:"(cuando corresponda)", l_swift:"Código SWIFT / BIC", l_banco:"Banco Destinatario", l_pais_banco:"País del Banco",
+      nota2:"Verifique cada carácter: un único carácter incorrecto puede resultar en devolución o investigación bancaria. (1er Mandamiento de la Orden de Pago)",
+      s3:"Datos del Banco Intermediario", l_banco_int:"Banco Intermediario",
+      h_banco_int:"Complete solo cuando el pago requiera banco intermediario/corresponsal.",
+      l_swift_int:"Código SWIFT / BIC del Intermediario", l_conta_int:"Cuenta / ABA / Routing", l_pais_int:"País del Banco Intermediario",
+      s4:"Contacto del Beneficiario", opcional:"(opcional)", l_contato:"Contacto", l_tel:"Teléfono", l_email:"Correo electrónico",
+      s_transacao:"Detalles de la Transacción", l_valor:"Valor Total", l_moeda:"Moneda",
+      s5:"Invoice", l_upload:"Carga de Invoice", up_txt:"Haga clic para adjuntar la invoice (PDF, JPG o PNG)", troca:"(haga clic para cambiar)",
+      inv_badge:"Datos de la Invoice", l_inv:"Complete los datos de la invoice",
+      h_inv:"Use este campo si el cliente no tiene el archivo y solo tiene los datos (p. ej., enviados por WhatsApp). Este campo solo es obligatorio cuando no hay carga de invoice arriba.",
+      ph_inv:"N.º de invoice, fecha, descripción de mercancía/servicio, valor, moneda, Incoterm...",
+      btn_enviar:"Enviar Orden de Pago", obrig:"Campos obligatorios",
+      ajuda_btn:"FAQ", ajuda_tag:"Preguntas frecuentes · SttartPay",
+      aba_mandamentos:"10 Mandamientos", aba_devolucoes:"Reglas de Reembolso",
+      doc_titulo:"Los 10 Mandamientos de la Orden de Pago", doc_sub:"Reglas de Control de Envío y Actividad", sumario:"Sumario",
+      alerta_ok:"Formulario válido ✓\n\nEsta es una demostración de la estructura del formulario. Conecte el envío a su base de datos / dashboard."
+    }
+  };
+
+  /* ===== Conteúdo dos 10 Mandamentos por idioma ===== */
+  var MAND = {
+    pt:{ itens:[
+      {t:"Validarás todos os dados do beneficiário", intro:"Antes do envio, confirme obrigatoriamente:", list:["Nome do beneficiário exatamente como consta no banco;","Número da conta;","IBAN (quando aplicável);","Código SWIFT/BIC;","Banco destinatário e país;","Endereço do beneficiário, quando exigido."], alerta:"Um único caractere incorreto poderá resultar em devolução ou investigação bancária."},
+      {t:"Não enviarás pagamentos sem confirmar as instruções bancárias mais recentes", intro:"Dados bancários antigos ou alterados são uma das principais causas de devolução. Sempre:", list:["Solicite carta bancária atualizada;","Verifique alterações recentes;","Confirme diretamente com o cliente ou beneficiário."]},
+      {t:"Escolherás corretamente o tipo de tarifa", intro:"SHA, OUR ou BEN devem ser definidos antes do envio. Regra de ouro:", list:["Quando o beneficiário deve receber o valor integral, utilizar OUR;","Quando houver compartilhamento de custos, utilizar SHA;","Nunca alterar a instrução sem autorização."], alerta:"Erro de tarifa gera devolução, reclamação comercial e perda financeira."},
+      {t:"Não enviarás pagamentos sem a documentação de suporte", intro:"Toda operação deve possuir:", list:["Invoice;","Contrato ou documento comercial;","Finalidade do pagamento;","Evidências da operação;","Aprovação interna, quando aplicável."], alerta:"Sem lastro documental não existe operação segura."},
+      {t:"Respeitarás as regras de compliance e sanções internacionais", intro:"Antes do envio, validar:", list:["KYC do cliente;","Screening de sanções;","PEP e listas restritivas;","Países sensíveis;","Natureza econômica da operação."], alerta:"Compliance não é uma etapa opcional. É obrigação regulatória."},
+      {t:"Conferirás a moeda e o valor da operação", intro:"Verifique:", list:["Moeda correta (USD, EUR, GBP etc.);","Valor exato;","Casas decimais;","Conversão cambial;","Taxas e encargos envolvidos."], alerta:"Erro de moeda pode causar prejuízos financeiros irreversíveis."},
+      {t:"Não enviarás pagamentos em feriados bancários sem alertar o cliente", intro:"Antes do envio, consulte:", list:["Feriados do país de origem;","Feriados do país de destino;","Feriados do sistema bancário correspondente;","Horário de corte (Cut-Off)."], alerta:"Pagamento enviado não significa pagamento liquidado."},
+      {t:"Registrarás todas as etapas da operação", intro:"Toda Wire deve possuir:", list:["Comprovante de cotação;","Aprovação comercial;","Registro operacional;","Comprovante de envio;","UETR ou referência SWIFT;","Histórico de comunicações."], alerta:"O que não está registrado, não pode ser auditado."},
+      {t:"Não assumirás custos de erros operacionais", intro:"Erros decorrentes de dados bancários incorretos, informações incompletas, instruções equivocadas ou alterações não comunicadas poderão gerar tarifas de devolução, custos de investigação, encargos bancários e novas tarifas de envio.", alerta:"A responsabilidade financeira será atribuída conforme a origem do erro."},
+      {t:"Tratarás cada ordem de pagamento como uma responsabilidade financeira e fiscal", intro:"Uma Wire internacional representa responsabilidade perante o cliente, regulatória, fiscal e reputacional.", alerta:"Enviar uma ordem de pagamento é assumir o compromisso de executar a operação com precisão, rastreabilidade e total conformidade."}
+    ], final:{h:"Declaração Final", p:"Ao iniciar o processamento de qualquer Ordem de Pagamento Internacional, todos os envolvidos declaram ciência das regras acima e comprometem-se a atuar com diligência, responsabilidade operacional e observância às normas financeiras, cambiais e de prevenção à lavagem de dinheiro.", slogan:"ERRO EVITADO É CUSTO ECONOMIZADO.<br>VALIDAÇÃO É O PRIMEIRO PASSO DE UMA WIRE BEM-SUCEDIDA.<br>🚨 SEM DEVOLUÇÃO POR TARIFA OU ENCARGO 🚨"} },
+
+    en:{ itens:[
+      {t:"Validate all beneficiary data", intro:"Before sending, confirm mandatorily:", list:["Beneficiary name exactly as it appears at the bank;","Account number;","IBAN (when applicable);","SWIFT/BIC code;","Recipient bank and country;","Beneficiary address, when required."], alerta:"A single incorrect character may result in a return or banking investigation."},
+      {t:"Do not send payments without confirming the most recent banking instructions", intro:"Outdated or changed bank details are one of the main causes of returns. Always:", list:["Request an updated bank letter;","Check for recent changes;","Confirm directly with the client or beneficiary."]},
+      {t:"Choose the correct fee type", intro:"SHA, OUR or BEN must be defined before sending. Golden rule:", list:["When the beneficiary must receive the full amount, use OUR;","When costs are shared, use SHA;","Never change the instruction without authorization."], alerta:"A fee error causes returns, commercial complaints and financial loss."},
+      {t:"Do not send payments without supporting documentation", intro:"Every operation must have:", list:["Invoice;","Contract or commercial document;","Purpose of the payment;","Evidence of the operation;","Internal approval, when applicable."], alerta:"Without documentary backing there is no secure operation."},
+      {t:"Comply with compliance rules and international sanctions", intro:"Before sending, validate:", list:["Client KYC;","Sanctions screening;","PEP and restrictive lists;","Sensitive countries;","Economic nature of the operation."], alerta:"Compliance is not an optional step. It is a regulatory obligation."},
+      {t:"Check the currency and amount of the operation", intro:"Verify:", list:["Correct currency (USD, EUR, GBP, etc.);","Exact amount;","Decimal places;","Currency conversion;","Fees and charges involved."], alerta:"A currency error can cause irreversible financial losses."},
+      {t:"Do not send payments on bank holidays without alerting the client", intro:"Before sending, check:", list:["Holidays in the country of origin;","Holidays in the destination country;","Holidays of the correspondent banking system;","Cut-off time."], alerta:"A payment sent does not mean a payment settled."},
+      {t:"Record every stage of the operation", intro:"Every Wire must have:", list:["Quote confirmation;","Commercial approval;","Operational record;","Proof of sending;","UETR or SWIFT reference;","Communication history."], alerta:"What is not recorded cannot be audited."},
+      {t:"Do not assume the costs of operational errors", intro:"Errors arising from incorrect bank details, incomplete information, wrong instructions or uncommunicated changes may generate return fees, investigation costs, bank charges and new sending fees.", alerta:"Financial responsibility will be assigned according to the origin of the error."},
+      {t:"Treat every payment order as a financial and fiscal responsibility", intro:"An international Wire represents responsibility towards the client, regulatory, fiscal and reputational.", alerta:"Sending a payment order means committing to execute the operation with precision, traceability and full compliance."}
+    ], final:{h:"Final Declaration", p:"When initiating the processing of any International Payment Order, all parties involved declare awareness of the rules above and commit to act with diligence, operational responsibility and observance of financial, foreign exchange and anti-money laundering regulations.", slogan:"AN ERROR AVOIDED IS A COST SAVED.<br>VALIDATION IS THE FIRST STEP OF A SUCCESSFUL WIRE.<br>🚨 NO RETURNS DUE TO FEES OR CHARGES 🚨"} },
+
+    es:{ itens:[
+      {t:"Validarás todos los datos del beneficiario", intro:"Antes del envío, confirme obligatoriamente:", list:["Nombre del beneficiario exactamente como consta en el banco;","Número de cuenta;","IBAN (cuando corresponda);","Código SWIFT/BIC;","Banco destinatario y país;","Dirección del beneficiario, cuando se exija."], alerta:"Un único carácter incorrecto podrá resultar en devolución o investigación bancaria."},
+      {t:"No enviarás pagos sin confirmar las instrucciones bancarias más recientes", intro:"Datos bancarios antiguos o alterados son una de las principales causas de devolución. Siempre:", list:["Solicite carta bancaria actualizada;","Verifique cambios recientes;","Confirme directamente con el cliente o beneficiario."]},
+      {t:"Elegirás correctamente el tipo de tarifa", intro:"SHA, OUR o BEN deben definirse antes del envío. Regla de oro:", list:["Cuando el beneficiario deba recibir el valor íntegro, utilizar OUR;","Cuando haya reparto de costos, utilizar SHA;","Nunca alterar la instrucción sin autorización."], alerta:"Un error de tarifa genera devolución, reclamación comercial y pérdida financiera."},
+      {t:"No enviarás pagos sin la documentación de soporte", intro:"Toda operación debe poseer:", list:["Invoice;","Contrato o documento comercial;","Finalidad del pago;","Evidencias de la operación;","Aprobación interna, cuando corresponda."], alerta:"Sin respaldo documental no existe operación segura."},
+      {t:"Respetarás las reglas de compliance y sanciones internacionales", intro:"Antes del envío, validar:", list:["KYC del cliente;","Screening de sanciones;","PEP y listas restrictivas;","Países sensibles;","Naturaleza económica de la operación."], alerta:"El compliance no es una etapa opcional. Es una obligación regulatoria."},
+      {t:"Verificarás la moneda y el valor de la operación", intro:"Verifique:", list:["Moneda correcta (USD, EUR, GBP, etc.);","Valor exacto;","Decimales;","Conversión cambiaria;","Tasas y cargos involucrados."], alerta:"Un error de moneda puede causar pérdidas financieras irreversibles."},
+      {t:"No enviarás pagos en feriados bancarios sin alertar al cliente", intro:"Antes del envío, consulte:", list:["Feriados del país de origen;","Feriados del país de destino;","Feriados del sistema bancario corresponsal;","Horario de corte (Cut-Off)."], alerta:"Pago enviado no significa pago liquidado."},
+      {t:"Registrarás todas las etapas de la operación", intro:"Todo Wire debe poseer:", list:["Comprobante de cotización;","Aprobación comercial;","Registro operativo;","Comprobante de envío;","UETR o referencia SWIFT;","Historial de comunicaciones."], alerta:"Lo que no está registrado, no puede ser auditado."},
+      {t:"No asumirás costos de errores operativos", intro:"Errores derivados de datos bancarios incorretos, información incompleta, instrucciones equivocadas o cambios no comunicados podrán generar tarifas de devolución, costos de investigación, cargos bancarios y nuevas tarifas de envío.", alerta:"La responsabilidad financiera será atribuida según el origen del error."},
+      {t:"Tratarás cada orden de pago como una responsabilidad financiera y fiscal", intro:"Un Wire internacional representa responsabilidad ante el cliente, regulatoria, fiscal y reputacional.", alerta:"Enviar una orden de pago es asumir el compromiso de ejecutar la operación con precisión, trazabilidad y total conformidad."}
+    ], final:{h:"Declaración Final", p:"Al iniciar el procesamiento de cualquier Orden de Pago Internacional, todos los involucrados declaran conocimiento de las reglas anteriores y se comprometen a actuar con diligencia, responsabilidad operativa y observancia de las normas financieras, cambiarias y de prevención del lavado de dinero.", slogan:"ERROR EVITADO ES COSTO AHORRADO.<br>LA VALIDACIÓN ES EL PRIMER PASO DE UN WIRE EXITOSO.<br>🚨 SIN DEVOLUCIÓN POR TARIFA O CARGO 🚨"} }
+  };
+
+  /* ===== Conteúdo das Regras de Devolução por idioma ===== */
+  var DEVOLUCOES = {
+    pt:{ itens:[
+      {t:"Princípio Geral", p:"Toda devolução de recursos será realizada exclusivamente após análise operacional, financeira e de compliance, não constituindo obrigação automática da instituição. A instituição reserva-se o direito de recusar solicitações de devolução, solicitar documentação complementar, manter os recursos bloqueados até conclusão das análises e aguardar confirmação definitiva da liquidação dos recursos."},
+      {t:"Hipóteses que permitem devolução", list:["Pagamento em duplicidade;","Erro operacional comprovado;","Determinação judicial ou regulatória."]},
+      {t:"Hipóteses em que NÃO haverá devolução imediata", p:"Não serão efetuadas devoluções enquanto existir processo de Compliance (KYC, KYB, AML, PLD/FT, Screening, Sanções e Fraudes), recursos sem liquidação definitiva, compensação pendente, chargeback, dependência de confirmação do banco liquidante ou divergências documentais, inconsistências cadastrais ou suspeita de fraude."},
+      {t:"Conta para devolução", p:"A devolução somente poderá ocorrer para a mesma conta bancária de origem ou para outra conta de mesma titularidade previamente validada. Em nenhuma hipótese serão devolvidos recursos para terceiros."},
+      {t:"Custos", p:"Todos os custos relacionados à devolução poderão ser descontados do valor devolvido, incluindo tarifas bancárias, custos SWIFT, despesas de bancos intermediários, custos cambiais, custos operacionais e impostos incidentes."},
+      {t:"Prazos", p:"Os prazos terão início somente após confirmação da liquidação financeira, aprovação do Compliance e recebimento da documentação completa. Poderão ser prorrogados em razão de investigações, informações adicionais, dependência de terceiros ou bancos correspondentes."},
+      {t:"Direito de retenção", p:"A instituição poderá reter integral ou parcialmente os recursos diante de suspeita de fraude, determinação judicial ou regulatória, investigação de PLD/FT, descumprimento contratual ou necessidade de compensação de débitos."},
+      {t:"Devolução parcial", p:"A devolução poderá ocorrer apenas pelo saldo líquido disponível após dedução de tarifas, impostos, perdas cambiais e valores já liquidados a terceiros."},
+      {t:"Operações Internacionais", p:"A instituição não responde por retenções realizadas por bancos correspondentes, bloqueios em jurisdições estrangeiras, atrasos do sistema SWIFT ou de outras redes internacionais. A devolução dependerá da efetiva recuperação dos recursos."},
+      {t:"Casos de Força Maior", p:"A devolução poderá sofrer atraso em razão de feriados, indisponibilidade de sistemas, alterações regulatórias, força maior, sanções econômicas ou conflitos internacionais."},
+      {t:"Direito de Recusa", p:"A instituição poderá negar a devolução em caso de indícios de fraude, risco regulatório ou reputacional, descumprimento contratual, determinação de autoridade competente, ausência de comprovação da origem lícita dos recursos ou inconsistências documentais."},
+      {t:"Limitação de Responsabilidade", p:"A instituição não será responsável por perdas cambiais, lucros cessantes, variações de mercado, atrasos de terceiros, tarifas de bancos intermediários ou bloqueios por autoridades."}
+    ], final:{h:"Dúvidas?", p:"Qualquer dúvida, entre em contato: mesadeoperacoes@sttart.com.br"} },
+
+    en:{ itens:[
+      {t:"General Principle", p:"Any refund of funds will be carried out exclusively after operational, financial and compliance analysis, and does not constitute an automatic obligation of the institution. The institution reserves the right to refuse refund requests, request additional documentation, keep the funds blocked until completion of analyses, and await final confirmation of fund settlement."},
+      {t:"Hypotheses that allow refunds", list:["Duplicate payment;","Proven operational error;","Court or regulatory order."]},
+      {t:"Hypotheses where there will be NO immediate refunds", p:"Refunds will not be made while there is a Compliance process (KYC, KYB, AML, PLD/FT, Screening, Sanctions and Fraud), resources without final settlement, pending compensation, chargeback, dependence on confirmation from the settlement bank or documentary divergences, inconsistencies in records or suspected fraud."},
+      {t:"Account for refund", p:"The refund may only be made to the same original bank account or to another account with the same ownership previously validated. In no circumstances will funds be refunded to third parties."},
+      {t:"Costs", p:"All costs related to the refund may be deducted from the refunded amount, including bank fees, SWIFT costs, intermediary bank expenses, currency costs, operational costs and applicable taxes."},
+      {t:"Deadlines", p:"Deadlines will begin only after confirmation of financial settlement, Compliance approval and receipt of complete documentation. They may be extended due to investigations, additional information, dependence on third parties or correspondent banks."},
+      {t:"Right of retention", p:"The institution may fully or partially retain the funds in case of suspected fraud, court or regulatory order, PLD/FT investigation, breach of contract or need to offset debts."},
+      {t:"Partial refund", p:"The refund may only occur for the net balance available after deduction of fees, taxes, currency losses and amounts already settled to third parties."},
+      {t:"International Operations", p:"The institution is not responsible for retentions made by correspondent banks, freezes in foreign jurisdictions, delays in the SWIFT system or other international networks. The refund will depend on the actual recovery of the funds."},
+      {t:"Force Majeure Cases", p:"The refund may be delayed due to holidays, system unavailability, regulatory changes, force majeure, economic sanctions or international conflicts."},
+      {t:"Right of Refusal", p:"The institution may deny the refund in case of signs of fraud, regulatory or reputational risk, breach of contract, order from competent authority, lack of proof of lawful origin of funds or documentary inconsistencies."},
+      {t:"Limitation of Liability", p:"The institution is not responsible for currency losses, lost profits, market variations, delays by third parties, intermediary bank fees or freezes by authorities."}
+    ], final:{h:"Questions?", p:"If you have any questions, please contact: mesadeoperacoes@sttart.com.br"} },
+
+    es:{ itens:[
+      {t:"Principio General", p:"Todo reembolso de fondos se realizará exclusivamente después del análisis operativo, financiero y de cumplimiento, y no constituye una obligación automática de la institución. La institución se reserva el derecho de rechazar solicitudes de reembolso, solicitar documentación adicional, mantener los fondos bloqueados hasta la conclusión de los análisis y aguardar la confirmación final de la liquidación de fondos."},
+      {t:"Hipótesis que permiten reembolsos", list:["Pago duplicado;","Error operativo comprobado;","Orden judicial o regulatoria."]},
+      {t:"Hipótesis donde NO habrá reembolsos inmediatos", p:"No se realizarán reembolsos mientras exista un proceso de Cumplimiento (KYC, KYB, AML, PLD/FT, Screening, Sanciones y Fraude), fondos sin liquidación final, compensación pendiente, contracargo, dependencia de confirmación del banco liquidador o divergencias documentales, inconsistencias en registros o sospecha de fraude."},
+      {t:"Cuenta para reembolso", p:"El reembolso solo se puede hacer a la misma cuenta bancaria original o a otra cuenta con la misma titularidad previamente validada. En ningún caso se devolverán fondos a terceros."},
+      {t:"Costos", p:"Todos los costos relacionados con el reembolso pueden deducirse del monto reembolsado, incluidas tarifas bancarias, costos SWIFT, gastos de bancos intermediarios, costos de moneda, costos operativos e impuestos aplicables."},
+      {t:"Plazos", p:"Los plazos comenzarán solo después de la confirmación de la liquidación financiera, la aprobación de Cumplimiento y la recepción de la documentación completa. Pueden extenderse debido a investigaciones, información adicional, dependencia de terceros o bancos corresponsales."},
+      {t:"Derecho de retención", p:"La institución puede retener total o parcialmente los fondos en caso de sospecha de fraude, orden judicial o regulatoria, investigación de PLD/FT, incumplimiento de contrato o necesidad de compensar deudas."},
+      {t:"Reembolso parcial", p:"El reembolso solo puede ocurrir por el saldo neto disponible después de la deducción de tarifas, impuestos, pérdidas de moneda y montos ya liquidados a terceros."},
+      {t:"Operaciones Internacionales", p:"La institución no es responsable por retenciones realizadas por bancos corresponsales, congelaciones en jurisdicciones extranjeras, retrasos en el sistema SWIFT u otras redes internacionales. El reembolso dependerá de la recuperación efectiva de los fondos."},
+      {t:"Casos de Fuerza Mayor", p:"El reembolso puede retrasarse debido a festivos, no disponibilidad del sistema, cambios regulatorios, fuerza mayor, sanciones económicas o conflictos internacionales."},
+      {t:"Derecho de Rechazo", p:"La institución puede denegar el reembolso en caso de signos de fraude, riesgo regulatorio o reputacional, incumplimiento de contrato, orden de autoridad competente, falta de prueba del origen lícito de fondos o inconsistencias documentales."},
+      {t:"Limitación de Responsabilidad", p:"La institución no es responsable de pérdidas de moneda, ganancias perdidas, variaciones de mercado, retrasos de terceros, tarifas de bancos intermediarios o congelaciones por autoridades."}
+    ], final:{h:"¿Preguntas?", p:"Si tiene alguna pregunta, contáctenos: mesadeoperacoes@sttart.com.br"} }
+  };
+
+  var lang = 'pt';
+  var abaAtiva = 'devolucoes';
+
+  /* ===== Render das abas ===== */
+  function renderAjuda(){
+    var d = T[lang], m = MAND[lang], dev = DEVOLUCOES[lang];
+    var h = '';
+    
+    if(abaAtiva === 'mandamentos'){
+      h += '<div class="doc-titulo">'+d.doc_titulo+'</div>';
+      h += '<div class="doc-sub">'+d.doc_sub+'</div>';
+      h += '<nav class="sumario"><h4>'+d.sumario+'</h4><ol>';
+      m.itens.forEach(function(it,i){ h+='<li><a href="#m'+(i+1)+'">'+it.t+'</a></li>'; });
+      h += '</ol></nav>';
+      m.itens.forEach(function(it,i){
+        h += '<div class="mand" id="m'+(i+1)+'"><h3><span class="n">'+(i+1)+'</span><span class="titulo">'+it.t+'</span></h3>';
+        if(it.intro) h += '<p>'+it.intro+'</p>';
+        if(it.list){ h+='<ul>'; it.list.forEach(function(li){h+='<li>'+li+'</li>';}); h+='</ul>'; }
+        if(it.alerta) h += '<div class="alerta">'+it.alerta+'</div>';
+        h += '</div>';
+      });
+      h += '<div class="final"><h3>'+m.final.h+'</h3><p>'+m.final.p+'</p><div class="slogan">'+m.final.slogan+'</div></div>';
+      h += '<button class="voltar-topo" type="button">↑ Voltar ao Início</button>';
+    } else {
+      h += '<div class="doc-titulo">Regras Gerais para Devolução de Recursos</div>';
+      h += '<div class="doc-sub">Políticas e procedimentos de reembolso</div>';
+      h += '<nav class="sumario"><h4>Sumário</h4><ol>';
+      dev.itens.forEach(function(it,i){ h+='<li><a href="#dev'+(i+1)+'">'+it.t+'</a></li>'; });
+      h += '</ol></nav>';
+      dev.itens.forEach(function(it,i){
+        h += '<div class="regra" id="dev'+(i+1)+'"><h3><span class="n">'+(i+1)+'</span><span class="titulo">'+it.t+'</span></h3>';
+        if(it.p) h += '<p>'+it.p+'</p>';
+        if(it.list){ h+='<ul>'; it.list.forEach(function(li){h+='<li>'+li+'</li>';}); h+='</ul>'; }
+        h += '</div>';
+      });
+      h += '<div class="final"><h3>'+dev.final.h+'</h3><p>'+dev.final.p+'</p></div>';
+      h += '<button class="voltar-topo" type="button">↑ Voltar ao Início</button>';
+    }
+    
+    document.getElementById('painelCorpo').innerHTML = h;
+  }
+
+  /* ===== Aplica idioma ===== */
+  function setLang(l){
+    lang = l;
+    var d = T[l];
+    document.documentElement.lang = (l==='pt'?'pt-BR':l);
+    document.getElementById('docTitle').textContent = d.doctitle;
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      var k = el.getAttribute('data-i18n'); if(d[k]!==undefined) el.innerHTML = d[k];
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){
+      var k = el.getAttribute('data-i18n-ph'); if(d[k]!==undefined) el.placeholder = d[k];
+    });
+    document.querySelectorAll('.lang').forEach(function(b){ b.classList.toggle('ativo', b.dataset.lang===l); });
+    renderAjuda();
+    sincronizar();
+  }
+  document.querySelectorAll('.lang').forEach(function(b){ b.addEventListener('click', function(){ setLang(this.dataset.lang); }); });
+
+  /* ===== Abas do painel ===== */
+  document.querySelectorAll('.painel-aba').forEach(function(aba){
+    aba.addEventListener('click', function(){
+      abaAtiva = this.dataset.aba;
+      document.querySelectorAll('.painel-aba').forEach(function(a){ a.classList.remove('ativa'); });
+      this.classList.add('ativa');
+      renderAjuda();
+    });
+  });
+
+/* ===== Natureza "Outros" ===== */
+  var natureza = document.getElementById('natureza');
+  var outrosBox = document.getElementById('outrosBox');
+  var outrosInput = document.getElementById('naturezaOutros');
+  natureza.addEventListener('change', function(){
+    var ehOutros = this.value === 'Outros';
+    outrosBox.style.display = ehOutros ? 'block' : 'none';
+    outrosInput.required = ehOutros;
+    if(!ehOutros) outrosInput.value = '';
+  });
+
+  /* ===== Invoice: "Dados da Invoice" só sem upload ===== */
+  var fileInput = document.getElementById('invoiceFile');
+  var box = document.getElementById('dadosInvoiceBox');
+  var dados = document.getElementById('dadosInvoice');
+  var uploadTxt = document.getElementById('uploadTxt');
+  function sincronizar(){
+    var d = T[lang];
+    var temArquivo = fileInput.files && fileInput.files.length > 0;
+    if(temArquivo){
+      box.classList.add('oculto'); dados.required = false;
+      uploadTxt.textContent = '✓ ' + fileInput.files[0].name + ' ' + d.troca;
+    } else {
+      box.classList.remove('oculto'); dados.required = true;
+      uploadTxt.textContent = d.up_txt;
+    }
+  }
+  fileInput.addEventListener('change', sincronizar);
+
+  /* ===== Painel de ajuda abrir/fechar ===== */
+  var overlay = document.getElementById('overlay');
+  var painel = document.getElementById('painel');
+  function abrir(){ overlay.classList.add('aberto'); painel.classList.add('aberto'); painel.setAttribute('aria-hidden','false'); }
+  function fechar(){ overlay.classList.remove('aberto'); painel.classList.remove('aberto'); painel.setAttribute('aria-hidden','true'); }
+  document.getElementById('ajudaBtn').addEventListener('click', abrir);
+  overlay.addEventListener('click', fechar);
+  document.getElementById('fecharBtn').addEventListener('click', fechar);
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') fechar(); });
+
+  /* Sumário: rolagem suave e voltar ao topo */
+  document.getElementById('painelCorpo').addEventListener('click', function(e){
+    var a = e.target.closest('.sumario a');
+    if(a){
+      e.preventDefault();
+      var alvo = document.querySelector(a.getAttribute('href'));
+      if(alvo) alvo.scrollIntoView({behavior:'smooth', block:'start'});
+      return;
+    }
+    
+    var btn = e.target.closest('.voltar-topo');
+    if(btn){
+      e.preventDefault();
+      document.getElementById('painelCorpo').scrollTop = 0;
+    }
+  });
+
+  /* ===================================================
+     INTEGRAÇÃO GOOGLE SHEETS
+     Cole aqui a URL gerada pelo Google Apps Script.
+     Exemplo: https://script.google.com/macros/s/AKfy.../exec
+  =================================================== */
+  var SCRIPT_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
+
+  /* Submit → envia dados para o Google Sheets */
+  document.getElementById('form').addEventListener('submit', function(e){
+    e.preventDefault();
+
+    var btn = this.querySelector('button[type="submit"]');
+    var textoOriginal = btn.textContent;
+    btn.textContent = '⏳ Enviando...';
+    btn.disabled = true;
+
+    // Coleta todos os campos do formulário
+    var fd  = new FormData(this);
+    var obj = {};
+    fd.forEach(function(val, key){ if(key !== 'invoice_file') obj[key] = val; });
+
+    // Captura nome do arquivo de invoice (se houver)
+    var fileInput = document.getElementById('invoiceFile');
+    if(fileInput.files && fileInput.files.length > 0){
+      obj['arquivo_invoice'] = fileInput.files[0].name;
+    } else {
+      obj['arquivo_invoice'] = '';
+    }
+
+    // Verifica se a URL foi configurada
+    if(!SCRIPT_URL || SCRIPT_URL === 'COLE_AQUI_A_URL_DO_APPS_SCRIPT'){
+      alert('⚠️ Configure a variável SCRIPT_URL no HTML com a URL do seu Google Apps Script.');
+      btn.textContent = textoOriginal;
+      btn.disabled = false;
+      return;
+    }
+
+    fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(obj)
+    })
+    .then(function(){
+      // Mensagem de sucesso com instruções
+      const mensagem = '✅ Ordem de Pagamento enviada com sucesso!\n\n' +
+                      'Dados: Google Sheets (aba Beneficiários)\n' +
+                      'PDF: Google Drive (pasta Ordens de Pagamento)\n\n' +
+                      'Clique em OK para abrir a pasta no Drive.';
+      alert(mensagem);
+      
+      // Abre a pasta do Drive em nova aba
+      window.open('https://drive.google.com/drive/folders/179B8KhStSX43ZPwCuTZ6RuvLN5ScwC1P', '_blank');
+      
+      // Limpa o formulário
+      document.getElementById('form').reset();
+      document.getElementById('uploadTxt').textContent = T[lang].up_txt;
+      document.getElementById('dadosInvoiceBox').classList.remove('oculto');
+      document.getElementById('dadosInvoice').required = true;
+      document.getElementById('outrosBox').style.display = 'none';
+    })
+    .catch(function(err){
+      alert('❌ Erro ao enviar: ' + err.message + '\nVerifique a URL do Apps Script e tente novamente.');
+    })
+    .finally(function(){
+      btn.textContent = textoOriginal;
+      btn.disabled = false;
+    });
+  });
+
+  setLang('pt');
+</script>
+</body>
+</html>
