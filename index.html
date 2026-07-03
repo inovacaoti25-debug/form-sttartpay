@@ -102,6 +102,82 @@
   .regra li{padding:0 0 0 16px;position:relative;margin:1px 0}
   .regra:last-child{border-bottom:none}
 
+  /* Modal de Sucesso */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  .modal-overlay.ativo {
+    display: flex;
+  }
+  .modal-box {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    max-width: 450px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-icon {
+    width: 60px;
+    height: 60px;
+    background: #4CAF50;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 32px;
+    animation: popIn 0.5s ease;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0); }
+    70% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+  .modal-titulo {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 12px;
+  }
+  .modal-msg {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .modal-botao {
+    background: #c41c3b;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    font-size: 14px;
+  }
+  .modal-botao:hover {
+    background: #a01730;
+    transform: scale(1.02);
+  }
+
   @media(max-width:560px){.grid{grid-template-columns:1fr}header,form{padding-left:22px;padding-right:22px}.langs{right:16px;top:68px}.ajuda-btn{right:16px;top:16px}.painel{width:100%}}
 </style>
 </head>
@@ -642,7 +718,7 @@
      Cole aqui a URL gerada pelo Google Apps Script.
      Exemplo: https://script.google.com/macros/s/AKfy.../exec
   =================================================== */
-  var SCRIPT_URL = "AKfycbxE5EaXU5IFNTz4jai4PD3qUNSCU1JLI0ffBiGeD6CquVLY9BRBiP2qwPYE-zgoCdzeuQ";
+  var SCRIPT_URL = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
   /* Submit → envia dados para o Google Sheets */
   document.getElementById('form').addEventListener('submit', function(e){
@@ -681,15 +757,34 @@
       body: JSON.stringify(obj)
     })
     .then(function(){
-      // Mensagem de sucesso com instruções
-      const mensagem = '✅ Ordem de Pagamento enviada com sucesso!\n\n' +
-                      'Dados: Google Sheets (aba Beneficiários)\n' +
-                      'PDF: Google Drive (pasta Ordens de Pagamento)\n\n' +
-                      'Clique em OK para abrir a pasta no Drive.';
-      alert(mensagem);
+      // Mostra modal elegante
+      const modal = document.getElementById('modalSucesso');
+      const modalMsg = document.getElementById('modalMsg');
+      const modalBotao = document.getElementById('modalBotao');
       
-      // Abre a pasta do Drive em nova aba
-      window.open('https://drive.google.com/drive/folders/179B8KhStSX43ZPwCuTZ6RuvLN5ScwC1P', '_blank');
+      // Define mensagem (multilíngue)
+      const msgs = {
+        'pt': 'Sua Ordem de Pagamento foi enviada com sucesso.<br>Os dados foram registrados em Google Sheets e o PDF foi gerado em Google Drive.',
+        'en': 'Your Payment Order was sent successfully.<br>Data was recorded in Google Sheets and PDF was generated in Google Drive.',
+        'es': 'Su Orden de Pago fue enviada exitosamente.<br>Los datos fueron registrados en Google Sheets y el PDF fue generado en Google Drive.'
+      };
+      
+      modalMsg.innerHTML = msgs[lang] || msgs['pt'];
+      modal.classList.add('ativo');
+      
+      // Fecha modal ao clicar no botão
+      modalBotao.onclick = function(){
+        modal.classList.remove('ativo');
+        // Abre a pasta do Drive em nova aba
+        window.open('https://drive.google.com/drive/folders/179B8KhStSX43ZPwCuTZ6RuvLN5ScwC1P', '_blank');
+      };
+      
+      // Fecha ao clicar no overlay
+      modal.onclick = function(e){
+        if(e.target === modal){
+          modal.classList.remove('ativo');
+        }
+      };
       
       // Limpa o formulário
       document.getElementById('form').reset();
@@ -708,6 +803,19 @@
   });
 
   setLang('pt');
-</script>
+</script>  <!-- Modal de Sucesso -->
+  <div id="modalSucesso" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-icon">✓</div>
+      <div class="modal-titulo" data-i18n="modal_titulo">Sucesso!</div>
+      <div class="modal-msg" id="modalMsg">
+        Sua Ordem de Pagamento foi enviada com sucesso.<br>
+        Os dados foram registrados e o PDF foi gerado.
+      </div>
+      <button class="modal-botao" id="modalBotao" data-i18n="modal_botao">Fechar</button>
+    </div>
+  </div>
+
 </body>
 </html>
+  
